@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Syndic — 1 Rue du Cinéma</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#FFFFFF;--bg2:#F7F7F5;--bg3:#EFEFEC;
+  --text:#111118;--text2:#44444F;--text3:#88889A;
+  --border:#E4E4EC;--border2:#CCCCD8;
+  --blue:#1B3A8C;--blue-bg:#EEF2FB;--blue-t:#0F2260;
+  --teal:#0A5C47;--teal-bg:#E8F5F1;--teal-t:#063828;
+  --amber:#7A4800;--amber-bg:#FDF3E7;--amber-t:#4A2C00;
+  --red:#8C1A1A;--red-bg:#FCEAEA;--red-t:#5C0F0F;
+  --green:#1A5C20;--green-bg:#E8F5EA;--green-t:#0F3813;
+  --gold:#B8860B;--gold-bg:#FBF6E8;--gold-t:#7A5A00;
+  --r:8px;--rs:5px;
+  --shadow:0 1px 4px rgba(0,0,0,0.06);
+  --shadow-md:0 4px 16px rgba(0,0,0,0.08);
+  --font:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+}
+body{font-family:var(--font);font-size:14px;color:var(--text);background:var(--bg2);line-height:1.5}
+.app{display:flex;height:100vh;overflow:hidden}
+
+/* SIDEBAR */
+.sb{width:248px;flex-shrink:0;background:var(--blue);display:flex;flex-direction:column}
+.sb-logo{padding:1.5rem 1.25rem 1.25rem;border-bottom:1px solid rgba(255,255,255,0.12)}
+.sb-logo-badge{display:inline-block;background:rgba(255,255,255,0.15);color:#fff;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:3px;margin-bottom:10px}
+.sb-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:600;color:#fff;letter-spacing:-0.01em;line-height:1.3}
+.sb-sub{font-size:11px;color:rgba(255,255,255,0.55);margin-top:4px;letter-spacing:.01em}
+.sb-nav{flex:1;overflow-y:auto;padding:.75rem 0}
+.sb-sec{font-size:9px;font-weight:700;color:rgba(255,255,255,0.35);padding:.9rem 1.25rem .3rem;letter-spacing:.1em;text-transform:uppercase}
+.ni{display:flex;align-items:center;gap:10px;padding:8px 1.25rem;font-size:13px;cursor:pointer;color:rgba(255,255,255,0.65);border-left:2px solid transparent;transition:all .12s}
+.ni:hover{background:rgba(255,255,255,0.08);color:#fff}
+.ni.active{background:rgba(255,255,255,0.12);color:#fff;border-left-color:rgba(255,255,255,0.8);font-weight:500}
+.ni-icon{width:15px;height:15px;flex-shrink:0;opacity:.7}
+.ni.active .ni-icon{opacity:1}
+.sb-key{padding:.9rem 1.25rem;border-top:1px solid rgba(255,255,255,0.12)}
+.sb-key label{font-size:9px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:5px}
+.sb-key input{width:100%;padding:7px 9px;border:1px solid rgba(255,255,255,0.2);border-radius:var(--rs);font-size:11px;background:rgba(255,255,255,0.1);color:#fff;font-family:var(--font)}
+.sb-key input::placeholder{color:rgba(255,255,255,0.35)}
+.sb-key input:focus{outline:none;border-color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.15)}
+.key-st{font-size:10px;margin-top:4px;color:rgba(255,255,255,0.45);display:flex;align-items:center;gap:4px}
+.key-st.ok{color:#7FFFB0;font-weight:500}
+.key-change{font-size:10px;color:rgba(255,255,255,0.4);cursor:pointer;margin-top:3px;display:inline-block;text-decoration:underline}
+.key-change:hover{color:rgba(255,255,255,0.7)}
+
+/* MAIN */
+.main{flex:1;overflow-y:auto;background:var(--bg2)}
+.page{display:none;padding:2rem 2.25rem}
+.page.active{display:block}
+.ph{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:1px solid var(--border)}
+.pt{font-family:'Playfair Display',serif;font-size:24px;font-weight:600;letter-spacing:-0.02em;color:var(--text)}
+.ps{font-size:12px;color:var(--text3);margin-top:4px;font-weight:400}
+
+/* CARDS */
+.card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem;margin-bottom:1rem;box-shadow:var(--shadow)}
+.card-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:1.25rem;padding-bottom:.75rem;border-bottom:1px solid var(--border)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1rem}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-bottom:1rem}
+.met{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:1.25rem 1rem;text-align:center;box-shadow:var(--shadow)}
+.ml{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+.mv{font-size:28px;font-weight:700;letter-spacing:-0.03em;color:var(--text)}
+
+/* BADGES */
+.b{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:3px 8px;border-radius:3px;font-weight:600;letter-spacing:.02em;text-transform:uppercase}
+.b-blue{background:var(--blue-bg);color:var(--blue-t)}
+.b-teal{background:var(--teal-bg);color:var(--teal-t)}
+.b-amber{background:var(--amber-bg);color:var(--amber-t)}
+.b-red{background:var(--red-bg);color:var(--red-t)}
+.b-green{background:var(--green-bg);color:var(--green-t)}
+.b-gold{background:var(--gold-bg);color:var(--gold-t)}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid var(--border2);border-radius:var(--rs);font-size:12px;cursor:pointer;background:var(--bg);color:var(--text);font-family:var(--font);font-weight:500;transition:all .12s;letter-spacing:.01em}
+.btn:hover{background:var(--bg2);border-color:var(--text3)}
+.btn-p{background:var(--blue);color:#fff;border-color:transparent;box-shadow:0 2px 6px rgba(27,58,140,0.25)}
+.btn-p:hover{background:#152d6e;border-color:transparent}
+.btn-green{background:var(--teal);color:#fff;border-color:transparent}
+.btn-green:hover{background:#084535}
+.btn-blue{background:var(--blue);color:#fff;border-color:transparent}
+.btn-sm{padding:5px 12px;font-size:11px}
+.btn-ic{width:28px;height:28px;padding:0;display:inline-flex;align-items:center;justify-content:center}
+.btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2}
+
+/* TABLES */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;padding:9px 12px;border-bottom:2px solid var(--border);background:var(--bg2)}
+td{padding:11px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg2)}
+
+/* FORMS */
+.fg{margin-bottom:1rem}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.fl{display:block;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:5px;letter-spacing:.01em}
+input,select,textarea{width:100%;padding:9px 11px;border:1px solid var(--border2);border-radius:var(--rs);font-size:13px;color:var(--text);background:var(--bg);font-family:var(--font);transition:border .12s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(27,58,140,.08)}
+textarea{resize:vertical;min-height:80px}
+
+/* MODAL */
+.ov{display:none;position:fixed;inset:0;background:rgba(17,17,24,.5);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.ov.open{display:flex}
+.modal{background:var(--bg);border-radius:var(--r);border:1px solid var(--border);padding:2rem;width:520px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-md)}
+.mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid var(--border)}
+.mt{font-family:'Playfair Display',serif;font-size:18px;font-weight:600}
+.xb{background:none;border:none;cursor:pointer;color:var(--text3);font-size:22px;line-height:1}
+.xb:hover{color:var(--text)}
+.mf{display:flex;gap:8px;justify-content:flex-end;margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border)}
+
+/* COPROS */
+.ci{display:flex;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid var(--border)}
+.ci:last-child{border-bottom:none}
+.av{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;font-family:'Playfair Display',serif}
+.av-b{background:var(--blue-bg);color:var(--blue-t)}
+.av-t{background:var(--teal-bg);color:var(--teal-t)}
+.av-a{background:var(--amber-bg);color:var(--amber-t)}
+.cn{font-weight:600;font-size:14px;letter-spacing:.01em}
+.cl{font-size:11px;color:var(--text3);margin-top:4px}
+.lt{display:inline-block;background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:2px 7px;font-size:10px;margin:2px 2px 0 0;color:var(--text2);font-weight:500;letter-spacing:.01em}
+.qb{display:flex;align-items:center;gap:10px;margin:7px 0}
+.qbn{min-width:110px;font-size:12px;color:var(--text2);font-weight:500}
+.qbt{flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.qbf{height:100%;border-radius:3px}
+.qbp{font-size:13px;font-weight:700;min-width:42px;text-align:right;color:var(--text)}
+
+/* DOCS */
+.docgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.25rem}
+.docbtn{display:flex;align-items:center;gap:14px;padding:16px;border:1px solid var(--border);border-radius:var(--r);cursor:pointer;background:var(--bg);text-align:left;width:100%;font-family:var(--font);transition:all .15s;box-shadow:var(--shadow)}
+.docbtn:hover{border-color:var(--blue);box-shadow:0 4px 16px rgba(27,58,140,.1);transform:translateY(-1px)}
+.dbi{width:42px;height:42px;border-radius:var(--rs);background:var(--blue-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px}
+.dbl{font-size:13px;font-weight:600;color:var(--text)}
+.dbs{font-size:11px;color:var(--text3);margin-top:3px}
+
+/* GED */
+.ged-cats{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem}
+.cat-btn{padding:5px 14px;border:1px solid var(--border);border-radius:3px;font-size:11px;cursor:pointer;background:var(--bg);color:var(--text2);font-family:var(--font);font-weight:500;transition:all .12s;text-transform:uppercase;letter-spacing:.04em}
+.cat-btn:hover{border-color:var(--blue);color:var(--blue-t)}
+.cat-btn.active{background:var(--blue);border-color:var(--blue);color:#fff}
+.doc-item{display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid var(--border)}
+.doc-item:last-child{border-bottom:none}
+.doc-icon{width:40px;height:40px;border-radius:var(--rs);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px}
+.doc-name{font-size:13px;font-weight:600}
+.doc-meta{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* DOC OUTPUT */
+.doc-out{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:2rem;white-space:pre-wrap;font-size:14px;line-height:1.85;color:var(--text);max-height:520px;overflow-y:auto;font-family:Georgia,'Times New Roman',serif;margin-top:1rem;box-shadow:var(--shadow)}
+.gen-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding-bottom:1rem;border-bottom:1px solid var(--border);margin-bottom:.5rem}
+.gen-title-text{font-family:'Playfair Display',serif;font-size:16px;font-weight:600}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.prog-w{height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-top:6px}
+.prog-f{height:100%;border-radius:2px;background:var(--blue)}
+.empty{text-align:center;padding:3rem 1rem;color:var(--text3);font-size:13px}
+.empty-icon{font-size:32px;margin-bottom:.75rem;opacity:.3}
+.notif{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--text);color:#fff;padding:11px 18px;border-radius:var(--rs);font-size:12px;font-weight:500;z-index:999;opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.2);letter-spacing:.01em}
+.notif.show{opacity:1;transform:translateY(0)}
+
+/* HEADER BAR */
+.topbar{background:var(--bg);border-bottom:1px solid var(--border);padding:.75rem 2.25rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.topbar-title{font-size:13px;font-weight:600;color:var(--text2)}
+.topbar-date{font-size:11px;color:var(--text3)}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<div class="sb">
+  <div class="sb-logo">
+    <div class="sb-logo-badge">Syndic Bénévole</div>
+    <div class="sb-title">1 Rue du Cinéma</div>
+    <div class="sb-sub">13016 Marseille · Section 911 E</div>
+  </div>
+  <div class="sb-nav">
+    <div class="sb-sec">Principal</div>
+    <div class="ni active" onclick="nav('db',this)">
+      <svg class="ni-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Tableau de bord
+    </div>
+    <div class="ni" onclick="nav('copros',this)">
+      <svg class="ni-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Copropriétaires
+    </div>
+    <div class="ni" onclick="nav('charges',this)">
+      <svg class="ni-icon" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Charges
+    </div>
+    <div class="sb-sec">Gestion</div>
+    <div class="ni" onclick="nav('ag',this)">
+      <svg class="ni-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      Assemblées générales
+    </div>
+    <div class="ni" onclick="nav('travaux',this)">
+      <svg class="ni-icon" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      Travaux & entretien
+    </div>
+    <div class="sb-sec">Documents</div>
+    <div class="ni" onclick="nav('gen',this)">
+      <svg class="ni-icon" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      Générer documents
+    </div>
+    <div class="ni" onclick="nav('ged',this)">
+      <svg class="ni-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      Classeur
+    </div>
+  </div>
+  <div class="sb-key">
+    <div class="key-st ok" id="key-st">✓ IA connectée</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+<div class="topbar">
+  <span class="topbar-title">Syndicat des Copropriétaires · 1 Rue du Cinéma</span>
+  <span class="topbar-date" id="topbar-date"></span>
+</div>
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-db">
+  <div class="ph">
+    <div><div class="pt">Tableau de bord</div><div class="ps">Syndicat des copropriétaires · 1 Rue du Cinéma, 13016 Marseille</div></div>
+  </div>
+  <div class="g4">
+    <div class="met"><div class="ml">Copropriétaires</div><div class="mv">3</div></div>
+    <div class="met"><div class="ml">Lots actifs</div><div class="mv">8</div></div>
+    <div class="met"><div class="ml">Trésorerie</div><div class="mv" id="d-solde">0 €</div></div>
+    <div class="met"><div class="ml">Impayées</div><div class="mv" style="color:var(--red)" id="d-imp">0 €</div></div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">Quotes-parts · 1.156 millièmes</div>
+      <div class="qb"><span class="qbn">S. Hatton</span><div class="qbt"><div class="qbf" style="width:55.4%;background:var(--blue)"></div></div><span class="qbp">55,4%</span></div>
+      <div class="qb"><span class="qbn">Cyril</span><div class="qbt"><div class="qbf" style="width:27.8%;background:#E8A020"></div></div><span class="qbp">27,8%</span></div>
+      <div class="qb"><span class="qbn">N. Pira</span><div class="qbt"><div class="qbf" style="width:16.8%;background:var(--teal)"></div></div><span class="qbp">16,8%</span></div>
+      <div style="font-size:11px;color:var(--text3);margin-top:12px">Lot 16 = 635/1.156 · Lot 4 = 194/1.156 · Lots 1,3,5-8 = 321/1.156</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Démarches prioritaires</div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:.25rem">
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px"><span class="b b-amber">1</span>Identifier Cyril (nom complet)</div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px"><span class="b b-amber">2</span>Convoquer la 1ère AG (LRAR, 21j avant)</div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px"><span class="b b-red">3</span>Immatriculer le syndicat<span class="b b-red" style="margin-left:auto">Urgent</span></div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px"><span class="b b-blue">4</span>Ouvrir un compte bancaire séparé</div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px"><span class="b b-green">✓</span>Assurance SwissLife en cours</div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Avancement création du syndic</div>
+    <div class="g4" style="margin:0">
+      <div><div style="font-size:13px;font-weight:600;margin-bottom:6px">1. Copropriétaires</div><div class="prog-w"><div class="prog-f" style="width:66%"></div></div><div style="font-size:11px;color:var(--text3);margin-top:4px">2/3 identifiés</div></div>
+      <div><div style="font-size:13px;font-weight:600;margin-bottom:6px">2. Convocation AG</div><div class="prog-w"><div class="prog-f" id="p2" style="width:0%"></div></div><div style="font-size:11px;color:var(--text3);margin-top:4px" id="p2t">Non commencé</div></div>
+      <div><div style="font-size:13px;font-weight:600;margin-bottom:6px">3. Immatriculation</div><div class="prog-w"><div class="prog-f" id="p3" style="width:0%"></div></div><div style="font-size:11px;color:var(--text3);margin-top:4px" id="p3t">Non commencé</div></div>
+      <div><div style="font-size:13px;font-weight:600;margin-bottom:6px">4. Compte bancaire</div><div class="prog-w"><div class="prog-f" id="p4" style="width:0%"></div></div><div style="font-size:11px;color:var(--text3);margin-top:4px" id="p4t">Non commencé</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- COPROS -->
+<div class="page" id="page-copros">
+  <div class="ph">
+    <div><div class="pt">Copropriétaires</div><div class="ps">Répartition des 1.156 millièmes</div></div>
+    <div style="display:flex;gap:8px"><button class="btn btn-p" onclick="openM('m-sh')">✏️ S. Hatton</button><button class="btn btn-p" onclick="openM('m-np')">✏️ N. Pira</button><button class="btn btn-p" onclick="openM('m-cyril')">✏️ Cyril</button></div>
+  </div>
+  <div class="card" style="margin-bottom:1rem">
+    <div class="ci" id="row-sh">
+      <div class="av av-b" id="av-sh">SH</div>
+      <div style="flex:1">
+        <div class="cn" id="sh-nm">Sabrina Hatton</div>
+        <div class="cl"><span class="lt">Lot 2 — Cave SS (6/1.156)</span><span class="lt">Lot 16 — Appart. 1er+combles (635/1.156)</span></div>
+        <div style="font-size:12px;color:var(--text3);margin-top:5px" id="sh-ct"></div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:16px;font-weight:700">641/1.156</div>
+        <div style="font-size:12px;color:var(--text3)">55,4% des voix</div>
+        <span class="b b-blue" style="margin-top:5px;display:inline-block" id="sh-role">Syndic pressentie</span>
+      </div>
+    </div>
+    <div class="ci" id="row-np">
+      <div class="av av-t" id="av-np">NP</div>
+      <div style="flex:1">
+        <div class="cn" id="np-nm">Nicole Pira</div>
+        <div class="cl"><span class="lt">Lot 4 — Appartement RDC (194/1.156)</span></div>
+        <div style="font-size:12px;color:var(--text3);margin-top:5px" id="np-ct"></div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:16px;font-weight:700">194/1.156</div>
+        <div style="font-size:12px;color:var(--text3)">16,8% des voix</div>
+      </div>
+    </div>
+    <div class="ci" style="border:none">
+      <div class="av av-a">?</div>
+      <div style="flex:1">
+        <div class="cn" id="cyril-nm">Cyril <span class="b b-amber">À identifier</span></div>
+        <div class="cl"><span class="lt">Lot 1 — Cave SS</span><span class="lt">Lot 3 — Local com.</span><span class="lt">Lots 5,6,7,8 — Celliers</span></div>
+        <div style="font-size:12px;color:var(--text3);margin-top:5px" id="cyril-ct"></div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:16px;font-weight:700">321/1.156</div>
+        <div style="font-size:12px;color:var(--text3)">27,8% des voix</div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Règles de majorité</div>
+    <table><thead><tr><th>Type de vote</th><th>Article</th><th>Seuil requis</th></tr></thead><tbody>
+      <tr><td>Désignation du syndic</td><td>Art. 25</td><td>Majorité absolue › 578/1.156</td></tr>
+      <tr><td>Budget prévisionnel</td><td>Art. 24</td><td>Majorité simple des présents</td></tr>
+      <tr><td>Gros travaux</td><td>Art. 26</td><td>Double majorité · 2/3 des voix</td></tr>
+      <tr><td>Travaux urgents</td><td>Art. 18</td><td>Syndic seul</td></tr>
+    </tbody></table>
+  </div>
+</div>
+
+<!-- CHARGES -->
+<div class="page" id="page-charges">
+  <div class="ph">
+    <div><div class="pt">Charges & trésorerie</div><div class="ps">Répartition automatique selon les quotes-parts</div></div>
+    <button class="btn btn-p" onclick="openM('m-charge')">+ Nouvelle charge</button>
+  </div>
+  <div class="g3">
+    <div class="met"><div class="ml">Total charges</div><div class="mv" id="tc">0 €</div></div>
+    <div class="met"><div class="ml">Payées</div><div class="mv" style="color:var(--green)" id="tp">0 €</div></div>
+    <div class="met"><div class="ml">En attente</div><div class="mv" style="color:var(--amber)" id="ta">0 €</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Appels de charges</div>
+    <div style="overflow-x:auto">
+      <table><thead><tr><th>Date</th><th>Désignation</th><th>Total</th><th>S.Hatton 55,4%</th><th>Cyril 27,8%</th><th>N.Pira 16,8%</th><th>Statut</th><th></th></tr></thead>
+      <tbody id="ch-tb"><tr><td colspan="8"><div class="empty"><div class="empty-icon">💰</div>Aucune charge — cliquez sur "+ Nouvelle charge"</div></td></tr></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- AG -->
+<div class="page" id="page-ag">
+  <div class="ph">
+    <div><div class="pt">Assemblées générales</div><div class="ps">Planification et suivi</div></div>
+    <button class="btn btn-p" onclick="openM('m-ag')">+ Planifier une AG</button>
+  </div>
+  <div class="card" style="margin-bottom:1rem">
+    <div class="card-title">Assemblées planifiées</div>
+    <div id="ag-list"><div class="empty"><div class="empty-icon">📅</div>Aucune AG planifiée</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Ordre du jour · 1ère AG constitutive</div>
+    <table><thead><tr><th>#</th><th>Point</th><th>Majorité</th></tr></thead><tbody>
+      <tr><td>1</td><td>Désignation du syndic bénévole et durée du mandat</td><td><span class="b b-blue">Art.25 · Absolue</span></td></tr>
+      <tr><td>2</td><td>Conseil syndical (facultatif à 3 copropriétaires)</td><td><span class="b b-green">Art.24 · Simple</span></td></tr>
+      <tr><td>3</td><td>Vote du budget prévisionnel annuel</td><td><span class="b b-green">Art.24 · Simple</span></td></tr>
+      <tr><td>4</td><td>Ouverture d'un compte bancaire séparé</td><td><span class="b b-green">Art.24 · Simple</span></td></tr>
+      <tr><td>5</td><td>Questions diverses</td><td>—</td></tr>
+    </tbody></table>
+  </div>
+</div>
+
+<!-- TRAVAUX -->
+<div class="page" id="page-travaux">
+  <div class="ph">
+    <div><div class="pt">Travaux & entretien</div><div class="ps">Suivi des interventions sur l'immeuble</div></div>
+    <button class="btn btn-p" onclick="openM('m-trav')">+ Nouveau travail</button>
+  </div>
+  <div class="card"><div id="trav-list"><div class="empty"><div class="empty-icon">🔧</div>Aucun travail enregistré</div></div></div>
+</div>
+
+<!-- GEN DOCS -->
+<div class="page" id="page-gen">
+  <div class="ph"><div><div class="pt">Générer des documents</div><div class="ps">Documents officiels générés par IA · téléchargeables en Word (.docx)</div></div></div>
+
+  <div class="docgrid">
+    <button class="docbtn" onclick="genDoc('convocation')"><div class="dbi">📋</div><div><div class="dbl">Convocation AG</div><div class="dbs">LRAR aux 3 copropriétaires</div></div></button>
+    <button class="docbtn" onclick="genDoc('pv')"><div class="dbi">📝</div><div><div class="dbl">Procès-verbal AG</div><div class="dbs">PV de désignation du syndic</div></div></button>
+    <button class="docbtn" onclick="genDoc('charges')"><div class="dbi">💶</div><div><div class="dbl">Appel de charges</div><div class="dbs">Répartition selon millièmes</div></div></button>
+    <button class="docbtn" onclick="genDoc('reglement')"><div class="dbi">📜</div><div><div class="dbl">Règlement intérieur</div><div class="dbs">Règles de vie commune</div></div></button>
+    <button class="docbtn" onclick="genDoc('carnet')"><div class="dbi">📗</div><div><div class="dbl">Carnet d'entretien</div><div class="dbs">Document obligatoire</div></div></button>
+    <button class="docbtn" onclick="genDoc('immat')"><div class="dbi">✅</div><div><div class="dbl">Guide immatriculation</div><div class="dbs">Registre national copropriétés</div></div></button>
+  </div>
+  <div id="gen-result" style="display:none">
+    <div class="gen-bar">
+      <div class="gen-title-text" id="gen-title">Document</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-sm" onclick="copyDoc()">📋 Copier</button>
+        <button class="btn btn-sm btn-green" onclick="dlDocx()">⬇️ Télécharger Word</button>
+        <button class="btn btn-sm btn-blue" onclick="saveToGed()">📁 Sauvegarder</button>
+        <button class="btn btn-sm" onclick="printDoc()">🖨️ Imprimer</button>
+      </div>
+    </div>
+    <div id="gen-loading" style="display:none;align-items:center;gap:10px;font-size:13px;color:var(--text2);margin-top:.75rem"><div class="spinner"></div>Génération en cours...</div>
+    <div class="doc-out" id="gen-out"></div>
+  </div>
+</div>
+
+<!-- GED -->
+<div class="page" id="page-ged">
+  <div class="ph">
+    <div><div class="pt">Classeur de documents</div><div class="ps">Stockage et classement de tous vos documents</div></div>
+    <label class="btn btn-p" style="cursor:pointer">Importer un fichier<input type="file" id="file-upload" multiple style="display:none" onchange="uploadFiles(this)"></label>
+  </div>
+  <div class="ged-cats">
+    <button class="cat-btn active" onclick="filterGed('all',this)">Tous</button>
+    <button class="cat-btn" onclick="filterGed('Légal',this)">Légal</button>
+    <button class="cat-btn" onclick="filterGed('Assemblées',this)">Assemblées</button>
+    <button class="cat-btn" onclick="filterGed('Charges',this)">Charges</button>
+    <button class="cat-btn" onclick="filterGed('Diagnostics',this)">Diagnostics</button>
+    <button class="cat-btn" onclick="filterGed('Travaux',this)">Travaux</button>
+  </div>
+  <div class="card"><div id="ged-list"><div class="empty"><div class="empty-icon">📂</div>Aucun document — importez vos fichiers ou sauvegardez des documents générés</div></div></div>
+</div>
+
+</div></div>
+
+<!-- MODALS -->
+<div class="ov" id="m-sh"><div class="modal">
+  <div class="mh"><span class="mt">Modifier — Sabrina Hatton</span><button class="xb" onclick="closeM('m-sh')">×</button></div>
+  <div class="fr"><div class="fg"><label class="fl">Prénom</label><input type="text" id="sh-p" value="Sabrina"></div><div class="fg"><label class="fl">Nom</label><input type="text" id="sh-n" value="Hatton"></div></div>
+  <div class="fg"><label class="fl">Adresse</label><input type="text" id="sh-a" placeholder="Adresse postale complète"></div>
+  <div class="fr"><div class="fg"><label class="fl">Email</label><input type="email" id="sh-e" placeholder="email@exemple.com"></div><div class="fg"><label class="fl">Téléphone</label><input type="tel" id="sh-t" placeholder="06 00 00 00 00"></div></div>
+  <div class="fg"><label class="fl">Rôle dans le syndic</label><select id="sh-r"><option value="Syndic pressentie">Syndic pressentie</option><option value="Syndic désigné(e)">Syndic désigné(e)</option><option value="Membre du conseil">Membre du conseil</option><option value="Copropriétaire">Copropriétaire</option></select></div>
+  <div class="mf"><button class="btn" onclick="closeM('m-sh')">Annuler</button><button class="btn btn-p" onclick="saveSH()">Enregistrer</button></div>
+</div></div>
+
+<div class="ov" id="m-np"><div class="modal">
+  <div class="mh"><span class="mt">Modifier — Nicole Pira</span><button class="xb" onclick="closeM('m-np')">×</button></div>
+  <div class="fr"><div class="fg"><label class="fl">Prénom</label><input type="text" id="np-p" value="Nicole"></div><div class="fg"><label class="fl">Nom</label><input type="text" id="np-n" value="Pira"></div></div>
+  <div class="fg"><label class="fl">Adresse</label><input type="text" id="np-a" placeholder="Adresse postale complète"></div>
+  <div class="fr"><div class="fg"><label class="fl">Email</label><input type="email" id="np-e" placeholder="email@exemple.com"></div><div class="fg"><label class="fl">Téléphone</label><input type="tel" id="np-t" placeholder="06 00 00 00 00"></div></div>
+  <div class="fg"><label class="fl">Rôle dans le syndic</label><select id="np-r"><option value="Copropriétaire">Copropriétaire</option><option value="Membre du conseil">Membre du conseil</option><option value="Syndic désigné(e)">Syndic désigné(e)</option></select></div>
+  <div class="mf"><button class="btn" onclick="closeM('m-np')">Annuler</button><button class="btn btn-p" onclick="saveNP()">Enregistrer</button></div>
+</div></div>
+
+<div class="ov" id="m-cyril"><div class="modal">
+  <div class="mh"><span class="mt">Compléter les infos de Cyril</span><button class="xb" onclick="closeM('m-cyril')">×</button></div>
+  <div class="fr"><div class="fg"><label class="fl">Prénom</label><input type="text" id="cy-p" value="Cyril"></div><div class="fg"><label class="fl">Nom</label><input type="text" id="cy-n" placeholder="Nom de famille"></div></div>
+  <div class="fg"><label class="fl">Adresse</label><input type="text" id="cy-a" placeholder="Adresse postale complète"></div>
+  <div class="fr"><div class="fg"><label class="fl">Email</label><input type="email" id="cy-e"></div><div class="fg"><label class="fl">Téléphone</label><input type="tel" id="cy-t"></div></div>
+  <div class="fg"><label class="fl">Rôle dans le syndic</label><select id="cy-r"><option value="Copropriétaire">Copropriétaire</option><option value="Membre du conseil">Membre du conseil</option><option value="Syndic désigné(e)">Syndic désigné(e)</option></select></div>
+  <div class="mf"><button class="btn" onclick="closeM('m-cyril')">Annuler</button><button class="btn btn-p" onclick="saveCyril()">Enregistrer</button></div>
+</div></div>
+
+<div class="ov" id="m-charge"><div class="modal">
+  <div class="mh"><span class="mt">Nouvelle charge</span><button class="xb" onclick="closeM('m-charge')">×</button></div>
+  <div class="fg"><label class="fl">Désignation</label><input type="text" id="ch-l" placeholder="Ex : Assurance copropriété SwissLife"></div>
+  <div class="fr"><div class="fg"><label class="fl">Montant total (€)</label><input type="number" id="ch-a" placeholder="0" step="0.01"></div><div class="fg"><label class="fl">Date</label><input type="date" id="ch-d"></div></div>
+  <div class="fg"><label class="fl">Catégorie</label><select id="ch-c"><option>Assurance</option><option>Entretien</option><option>Travaux</option><option>Administration</option><option>Énergie / eau</option><option>Autre</option></select></div>
+  <div class="mf"><button class="btn" onclick="closeM('m-charge')">Annuler</button><button class="btn btn-p" onclick="addCharge()">Ajouter</button></div>
+</div></div>
+
+<div class="ov" id="m-ag"><div class="modal">
+  <div class="mh"><span class="mt">Planifier une AG</span><button class="xb" onclick="closeM('m-ag')">×</button></div>
+  <div class="fg"><label class="fl">Type</label><select id="ag-t"><option>AG constitutive (1ère AG)</option><option>AG ordinaire annuelle</option><option>AG extraordinaire</option></select></div>
+  <div class="fr"><div class="fg"><label class="fl">Date</label><input type="date" id="ag-d"></div><div class="fg"><label class="fl">Heure</label><input type="text" id="ag-h" placeholder="18h00"></div></div>
+  <div class="fg"><label class="fl">Lieu</label><input type="text" id="ag-l" placeholder="1 Rue du Cinéma, 13016 Marseille"></div>
+  <div class="fg"><label class="fl">Notes</label><textarea id="ag-n" placeholder="Points à aborder..."></textarea></div>
+  <div class="mf"><button class="btn" onclick="closeM('m-ag')">Annuler</button><button class="btn btn-p" onclick="addAG()">Planifier</button></div>
+</div></div>
+
+<div class="ov" id="m-trav"><div class="modal">
+  <div class="mh"><span class="mt">Nouveau travail</span><button class="xb" onclick="closeM('m-trav')">×</button></div>
+  <div class="fg"><label class="fl">Description</label><input type="text" id="tr-d" placeholder="Ex : Réfection toiture terrasse"></div>
+  <div class="fr"><div class="fg"><label class="fl">Coût estimé (€)</label><input type="number" id="tr-c" placeholder="0"></div><div class="fg"><label class="fl">Priorité</label><select id="tr-p"><option>Urgente</option><option>Normale</option><option>Planifiée</option></select></div></div>
+  <div class="fg"><label class="fl">Prestataire</label><input type="text" id="tr-e" placeholder="Nom de l'entreprise"></div>
+  <div class="mf"><button class="btn" onclick="closeM('m-trav')">Annuler</button><button class="btn btn-p" onclick="addTravail()">Enregistrer</button></div>
+</div></div>
+
+<div class="ov" id="m-cat"><div class="modal">
+  <div class="mh"><span class="mt" id="m-cat-t">Classer le document</span><button class="xb" onclick="closeM('m-cat')">×</button></div>
+  <div class="fg"><label class="fl">Catégorie</label><select id="cat-sel"><option>Légal</option><option>Assemblées</option><option>Charges</option><option>Diagnostics</option><option>Travaux</option><option>Autre</option></select></div>
+  <div class="fg"><label class="fl">Description (optionnel)</label><input type="text" id="cat-desc"></div>
+  <div class="mf"><button class="btn" onclick="closeM('m-cat')">Annuler</button><button class="btn btn-p" onclick="confirmUpload()">Classer</button></div>
+</div></div>
+
+<div class="notif" id="notif"></div>
+
+<script>
+// ── STATE ──
+const S = {
+  charges:[], ags:[], travaux:[], gedDocs:[],
+  sh:{p:'Sabrina',n:'Hatton',a:'',e:'',t:'',r:'Syndic pressentie'},
+  np:{p:'Nicole',n:'Pira',a:'',e:'',t:'',r:'Copropriétaire'},
+  cyril:{p:'Cyril',n:'',a:'',e:'',t:'',r:'Copropriétaire'}
+};
+
+// ── API KEY ──
+function updateKeyStatus(){ }
+
+// ── NAV ──
+function nav(id, el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  el.classList.add('active');
+  if(id==='gen') updateKeyStatus();
+}
+
+// ── MODALS ──
+function openM(id){ document.getElementById(id).classList.add('open'); }
+function closeM(id){ document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.ov').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open')}));
+
+// ── NOTIFY ──
+function notify(m){ const n=document.getElementById('notif'); n.textContent=m; n.classList.add('show'); setTimeout(()=>n.classList.remove('show'),2600); }
+
+// ── CYRIL ──
+function saveCyril(){
+  S.cyril = {p:document.getElementById('cy-p').value, n:document.getElementById('cy-n').value, a:document.getElementById('cy-a').value, e:document.getElementById('cy-e').value, t:document.getElementById('cy-t').value};
+  const fn = (S.cyril.p+' '+S.cyril.n).trim();
+  document.getElementById('cyril-nm').innerHTML = fn + (S.cyril.n ? '<span class="b b-green" style="margin-left:8px">Identifié</span>' : '<span class="b b-amber" style="margin-left:8px">À identifier</span>');
+  document.getElementById('cyril-ct').textContent = [S.cyril.e, S.cyril.t, S.cyril.a].filter(Boolean).join(' · ');
+  closeM('m-cyril'); notify('Informations de '+fn+' enregistrées'); save();
+}
+function getCyril(){ return (S.cyril.p+' '+S.cyril.n).trim() || 'Cyril (nom à compléter)'; }
+
+function saveSH(){
+  S.sh = {p:document.getElementById('sh-p').value, n:document.getElementById('sh-n').value, a:document.getElementById('sh-a').value, e:document.getElementById('sh-e').value, t:document.getElementById('sh-t').value, r:document.getElementById('sh-r').value};
+  const fn = (S.sh.p+' '+S.sh.n).trim();
+  document.getElementById('sh-nm').textContent = fn;
+  document.getElementById('sh-ct').textContent = [S.sh.e, S.sh.t, S.sh.a].filter(Boolean).join(' · ');
+  document.getElementById('sh-role').textContent = S.sh.r;
+  const initials = (S.sh.p.charAt(0)+(S.sh.n.charAt(0)||'')).toUpperCase();
+  document.getElementById('av-sh').textContent = initials;
+  closeM('m-sh'); notify('Informations de '+fn+' enregistrées'); save();
+}
+
+function saveNP(){
+  S.np = {p:document.getElementById('np-p').value, n:document.getElementById('np-n').value, a:document.getElementById('np-a').value, e:document.getElementById('np-e').value, t:document.getElementById('np-t').value, r:document.getElementById('np-r').value};
+  const fn = (S.np.p+' '+S.np.n).trim();
+  document.getElementById('np-nm').textContent = fn;
+  document.getElementById('np-ct').textContent = [S.np.e, S.np.t, S.np.a].filter(Boolean).join(' · ');
+  const initials = (S.np.p.charAt(0)+(S.np.n.charAt(0)||'')).toUpperCase();
+  document.getElementById('av-np').textContent = initials;
+  closeM('m-np'); notify('Informations de '+fn+' enregistrées'); save();
+}
+
+// ── CHARGES ──
+function addCharge(){
+  const l=document.getElementById('ch-l').value.trim(), a=parseFloat(document.getElementById('ch-a').value)||0, d=document.getElementById('ch-d').value, c=document.getElementById('ch-c').value;
+  if(!l||!a){ notify('Désignation et montant requis'); return; }
+  S.charges.push({id:Date.now(),l,a,d,c,s:'En attente'});
+  renderCharges(); closeM('m-charge');
+  ['ch-l','ch-a','ch-d'].forEach(id=>document.getElementById(id).value='');
+  notify('Charge ajoutée'); save();
+}
+function delCharge(id){ S.charges=S.charges.filter(c=>c.id!==id); renderCharges(); save(); }
+function togCharge(id){ const c=S.charges.find(c=>c.id===id); if(c) c.s=c.s==='Payée'?'En attente':'Payée'; renderCharges(); save(); }
+function renderCharges(){
+  const tb=document.getElementById('ch-tb');
+  if(!S.charges.length){ tb.innerHTML='<tr><td colspan="8"><div class="empty"><div class="empty-icon">💰</div>Aucune charge enregistrée</div></td></tr>'; return; }
+  tb.innerHTML = S.charges.map(c=>{
+    const h=(c.a*641/1156).toFixed(2), cy=(c.a*321/1156).toFixed(2), np=(c.a*194/1156).toFixed(2);
+    const dd = c.d ? new Date(c.d).toLocaleDateString('fr-FR') : '—';
+    return `<tr><td>${dd}</td><td><strong>${c.l}</strong><br><small style="color:var(--text3)">${c.c}</small></td><td style="font-weight:700">${c.a.toFixed(2)} €</td><td>${h} €</td><td>${cy} €</td><td>${np} €</td><td><span class="b ${c.s==='Payée'?'b-green':'b-amber'}">${c.s}</span></td><td style="white-space:nowrap"><button class="btn btn-sm btn-ic" title="Marquer payée" onclick="togCharge(${c.id})">✓</button> <button class="btn btn-sm btn-ic" title="Supprimer" onclick="delCharge(${c.id})" style="color:var(--red)">×</button></td></tr>`;
+  }).join('');
+  const tot=S.charges.reduce((s,c)=>s+c.a,0), pay=S.charges.filter(c=>c.s==='Payée').reduce((s,c)=>s+c.a,0);
+  document.getElementById('tc').textContent=tot.toFixed(2)+' €';
+  document.getElementById('tp').textContent=pay.toFixed(2)+' €';
+  document.getElementById('ta').textContent=(tot-pay).toFixed(2)+' €';
+  document.getElementById('d-solde').textContent=pay.toFixed(2)+' €';
+  document.getElementById('d-imp').textContent=(tot-pay).toFixed(2)+' €';
+}
+
+// ── AGs ──
+const MO=['jan','fév','mar','avr','mai','juin','jul','aoû','sep','oct','nov','déc'];
+function addAG(){
+  const t=document.getElementById('ag-t').value, d=document.getElementById('ag-d').value, h=document.getElementById('ag-h').value, l=document.getElementById('ag-l').value, n=document.getElementById('ag-n').value;
+  if(!d){ notify('Sélectionnez une date'); return; }
+  S.ags.push({id:Date.now(),t,d,h,l,n});
+  renderAGs(); closeM('m-ag'); notify('AG planifiée'); save();
+  document.getElementById('p2').style.width='100%'; document.getElementById('p2t').textContent='Planifiée';
+}
+function renderAGs(){
+  const el=document.getElementById('ag-list');
+  if(!S.ags.length){ el.innerHTML='<div class="empty"><div class="empty-icon">📅</div>Aucune AG planifiée</div>'; return; }
+  el.innerHTML = S.ags.map(a=>{
+    const dd=new Date(a.d);
+    return `<div style="display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--border)"><div style="min-width:48px;text-align:center;background:var(--bg2);border-radius:var(--rs);padding:8px 4px"><div style="font-size:20px;font-weight:700;line-height:1">${dd.getDate()}</div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;margin-top:2px">${MO[dd.getMonth()]}</div></div><div style="flex:1"><div style="font-size:14px;font-weight:600">${a.t}</div><div style="font-size:12px;color:var(--text3);margin-top:3px">${a.h?a.h+' · ':''}${a.l||'Lieu à définir'}</div>${a.n?`<div style="font-size:12px;color:var(--text2);margin-top:5px">${a.n}</div>`:''}</div><span class="b b-blue">Planifiée</span></div>`;
+  }).join('');
+}
+
+// ── TRAVAUX ──
+const PC={Urgente:'b-red',Normale:'b-amber',Planifiée:'b-teal'};
+function addTravail(){
+  const d=document.getElementById('tr-d').value.trim();
+  if(!d){ notify('Décrivez le travail'); return; }
+  S.travaux.push({id:Date.now(),d,c:parseFloat(document.getElementById('tr-c').value)||0,p:document.getElementById('tr-p').value,e:document.getElementById('tr-e').value});
+  renderTravaux(); closeM('m-trav'); notify('Travail enregistré'); save();
+}
+function renderTravaux(){
+  const el=document.getElementById('trav-list');
+  if(!S.travaux.length){ el.innerHTML='<div class="empty"><div class="empty-icon">🔧</div>Aucun travail enregistré</div>'; return; }
+  el.innerHTML='<table><thead><tr><th>Description</th><th>Priorité</th><th>Coût estimé</th><th>Prestataire</th></tr></thead><tbody>'+S.travaux.map(t=>`<tr><td style="font-weight:600">${t.d}</td><td><span class="b ${PC[t.p]}">${t.p}</span></td><td>${t.c?t.c.toFixed(2)+' €':'—'}</td><td>${t.e||'—'}</td></tr>`).join('')+'</tbody></table>';
+}
+
+// ── DOCX ──
+function xmlEsc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function textToDocxXml(txt){
+  return txt.split('\n').map(line=>{
+    if(line.startsWith('# ')) return `<w:p><w:pPr><w:pStyle w:val="H1"/></w:pPr><w:r><w:t>${xmlEsc(line.slice(2))}</w:t></w:r></w:p>`;
+    if(line.startsWith('## ')) return `<w:p><w:pPr><w:pStyle w:val="H2"/></w:pPr><w:r><w:t>${xmlEsc(line.slice(3))}</w:t></w:r></w:p>`;
+    if(line==='---') return `<w:p><w:pPr><w:pBdr><w:bottom w:val="single" w:sz="6" w:space="1" w:color="CCCCCC"/></w:pBdr></w:pPr></w:p>`;
+    if(line.startsWith('- ')) return `<w:p><w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr></w:pPr><w:r><w:t>${xmlEsc(line.slice(2))}</w:t></w:r></w:p>`;
+    if(/^\d+\.\s/.test(line)) return `<w:p><w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="2"/></w:numPr></w:pPr><w:r><w:t>${xmlEsc(line.replace(/^\d+\.\s/,''))}</w:t></w:r></w:p>`;
+    if(line==='') return `<w:p><w:pPr><w:spacing w:after="80"/></w:pPr></w:p>`;
+    return `<w:p><w:r><w:t xml:space="preserve">${xmlEsc(line)}</w:t></w:r></w:p>`;
+  }).join('\n');
+}
+async function buildDocx(content){
+  if(typeof JSZip==='undefined') throw new Error('JSZip non disponible');
+  const zip=new JSZip();
+  zip.file('[Content_Types].xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/numbering.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml"/></Types>`);
+  zip.folder('_rels').file('.rels',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`);
+  zip.folder('word').folder('_rels').file('document.xml.rels',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering" Target="numbering.xml"/></Relationships>`);
+  zip.folder('word').file('styles.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:sz w:val="24"/><w:lang w:val="fr-FR"/></w:rPr></w:rPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:pPr><w:spacing w:after="160"/></w:pPr></w:style><w:style w:type="paragraph" w:styleId="H1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:before="480" w:after="240"/></w:pPr><w:rPr><w:b/><w:color w:val="1A5FA8"/><w:sz w:val="36"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="H2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:before="320" w:after="160"/></w:pPr><w:rPr><w:b/><w:color w:val="0D6B52"/><w:sz w:val="28"/></w:rPr></w:style></w:styles>`);
+  zip.folder('word').file('numbering.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:abstractNum w:abstractNumId="0"><w:lvl w:ilvl="0"><w:start w:val="1"/><w:numFmt w:val="bullet"/><w:lvlText w:val="•"/><w:lvlJc w:val="left"/><w:pPr><w:ind w:left="720" w:hanging="360"/></w:pPr></w:lvl></w:abstractNum><w:abstractNum w:abstractNumId="1"><w:lvl w:ilvl="0"><w:start w:val="1"/><w:numFmt w:val="decimal"/><w:lvlText w:val="%1."/><w:lvlJc w:val="left"/><w:pPr><w:ind w:left="720" w:hanging="360"/></w:pPr></w:lvl></w:abstractNum><w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num><w:num w:numId="2"><w:abstractNumId w:val="1"/></w:num></w:numbering>`);
+  zip.folder('word').file('document.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${textToDocxXml(content)}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1700" w:header="709" w:footer="709" w:gutter="0"/></w:sectPr></w:body></w:document>`);
+  return zip.generateAsync({type:'blob',compression:'DEFLATE'});
+}
+
+// ── PROMPTS ──
+const PROMPTS = {
+  convocation: ()=>{
+    const cn=getCyril();
+    const ag=S.ags.length?S.ags[S.ags.length-1]:null;
+    const date=ag?`le ${new Date(ag.d).toLocaleDateString('fr-FR')} à ${ag.h||'18h00'} au ${ag.l||'1 Rue du Cinéma'}`:'le [DATE À DÉFINIR] à [HEURE] au [LIEU]';
+    return `Rédige une convocation officielle complète à l'assemblée générale constitutive du syndicat des copropriétaires de l'immeuble situé au 1 Rue du Cinéma, 13016 Marseille (Section cadastrale 911 E, Parcelle 141).\n\nCopropriétaires à convoquer par LRAR :\n1. Sabrina HATTON — lots 2 et 16 — 641/1.156 millièmes\n2. Nicole PIRA — lot 4 — 194/1.156 millièmes\n3. ${cn} — lots 1, 3, 5, 6, 7, 8 — 321/1.156 millièmes\n\nRéunion fixée ${date}.\n\nOrdre du jour :\n1. Désignation du syndic bénévole et durée du mandat\n2. Désignation éventuelle du conseil syndical\n3. Vote du budget prévisionnel annuel\n4. Ouverture d'un compte bancaire séparé au nom du syndicat\n5. Questions diverses\n\nDocument formel avec mentions légales obligatoires (loi 65-557, décret 17/03/1967). Zones de signature. Utilise # pour titres principaux et ## pour sous-sections.`;
+  },
+  pv: ()=>{
+    const cn=getCyril();
+    return `Rédige un procès-verbal complet d'assemblée générale constitutive du syndicat des copropriétaires du 1 Rue du Cinéma, 13016 Marseille.\n\nPrésents :\n- Sabrina HATTON (641/1.156) — désignée syndic bénévole\n- Nicole PIRA (194/1.156)\n- ${cn} (321/1.156)\n\nRésolutions :\n1. Sabrina HATTON désignée syndic bénévole pour 1 an renouvelable — unanimité (Art.25 atteint)\n2. Pas de conseil syndical constitué\n3. Budget prévisionnel à définir\n4. Ouverture compte bancaire séparé — unanimité\n\nFeuille de présence, calcul de quorum, résolutions numérotées, zones de signature. Utilise # et ##.`;
+  },
+  charges: ()=>{
+    const cn=getCyril();
+    const tot=S.charges.reduce((s,c)=>s+c.a,0);
+    return `Rédige un appel de charges officiel pour la copropriété du 1 Rue du Cinéma, 13016 Marseille.\n\nCopropriétaires :\n- Sabrina HATTON : 641/1.156 (55,4%)\n- ${cn} : 321/1.156 (27,8%)\n- Nicole PIRA : 194/1.156 (16,8%)\n\n${tot>0?`Charges enregistrées : ${tot.toFixed(2)} €`:'Budget à définir en AG.'}\n\nTableau de répartition, postes détaillés, modalités de règlement, mentions légales Art.14-1. Utilise # et ##.`;
+  },
+  reglement: ()=>`Rédige un règlement intérieur complet pour la copropriété du 1 Rue du Cinéma, 13016 Marseille (immeuble mixte habitation + commerce). 3 copropriétaires, 8 lots, syndic bénévole. Parties communes, travaux, bruit, déchets, assurances, location courte durée (ALUR/ELAN Marseille), AG, charges. Conforme loi 65-557. Utilise # et ##.`,
+  carnet: ()=>`Rédige un carnet d'entretien de l'immeuble pour la copropriété du 1 Rue du Cinéma, 13016 Marseille (Section 911 E, Parcelle 141). Immeuble mixte : SS (2 caves), RDC (local com. + 4 celliers), 1er+combles (appart. 149,42 m²). Diagnostics : amiante IMMOTECH EXPERTISE 27/03/2023 n°23/IMO/0444, DPE disponible. Assurance SwissLife. Art.18 loi 65-557. Tableaux à compléter. Utilise # et ##.`,
+  immat: ()=>`Rédige un guide pratique pour immatriculer le syndicat des copropriétaires du 1 Rue du Cinéma, 13016 Marseille sur registre.coproprietes.gouv.fr. Immeuble mixte, 3 copropriétaires, 8 lots, syndic bénévole en cours de désignation. Documents à rassembler, procédure pas à pas, délais, pénalités, obligations annuelles. Guide actionnable avec étapes numérotées. Utilise # et ##.`
+};
+
+// ── GENERATE ──
+let curDocText='', curDocName='', curDocType='';
+async function genDoc(type){
+  const names={convocation:'Convocation AG',pv:'Procès-verbal AG',charges:'Appel de charges',reglement:'Règlement intérieur',carnet:"Carnet d'entretien",immat:'Guide immatriculation'};
+  curDocName=names[type]; curDocType=type;
+  document.getElementById('gen-result').style.display='';
+  document.getElementById('gen-title').textContent=curDocName;
+  document.getElementById('gen-loading').style.display='flex';
+  document.getElementById('gen-out').textContent='';
+  try{
+    const r = await fetch('/api/claude',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({messages:[{role:'user',content:PROMPTS[type]()}]})
+    });
+    const d = await r.json();
+    if(d.error){ document.getElementById('gen-out').textContent='Erreur : '+d.error.message; return; }
+    curDocText = d.content[0].text;
+    document.getElementById('gen-out').textContent = curDocText;
+  } catch(e){
+    document.getElementById('gen-out').textContent = 'Erreur : '+e.message;
+  } finally {
+    document.getElementById('gen-loading').style.display='none';
+  }
+}
+
+function copyDoc(){ if(!curDocText)return; navigator.clipboard.writeText(curDocText).then(()=>notify('Copié !')); }
+async function dlDocx(){
+  if(!curDocText){ notify('Générez d\'abord un document'); return; }
+  notify('Création du fichier Word...');
+  try{
+    const blob=await buildDocx(curDocText);
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=curDocName.replace(/\s+/g,'_')+'_'+new Date().toISOString().slice(0,10)+'.docx';
+    a.click();
+    notify('✓ Fichier Word téléchargé !');
+  } catch(e){ notify('Erreur : '+e.message); }
+}
+function saveToGed(){
+  if(!curDocText){ notify('Générez d\'abord un document'); return; }
+  const cats={convocation:'Assemblées',pv:'Assemblées',charges:'Charges',reglement:'Légal',carnet:'Légal',immat:'Légal'};
+  S.gedDocs.push({id:Date.now(),name:curDocName+' — '+new Date().toLocaleDateString('fr-FR'),type:'docx',cat:cats[curDocType]||'Autre',date:new Date().toISOString().slice(0,10),text:curDocText,generated:true});
+  renderGed(); save(); notify('✓ Sauvegardé dans le classeur');
+}
+function printDoc(){
+  if(!curDocText)return;
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${curDocName}</title><style>body{font-family:Arial,sans-serif;font-size:13px;line-height:1.7;max-width:750px;margin:2rem auto;padding:0 2rem}pre{white-space:pre-wrap;font-family:Arial,sans-serif}</style></head><body><pre>${curDocText.replace(/</g,'&lt;')}</pre></body></html>`);
+  w.document.close(); setTimeout(()=>w.print(),300);
+}
+
+// ── GED ──
+let gedFilter='all', pendingFiles=[];
+function uploadFiles(inp){
+  const files=Array.from(inp.files); if(!files.length)return;
+  pendingFiles=files;
+  document.getElementById('m-cat-t').textContent=files.length>1?`Classer ${files.length} fichiers`:`Classer : ${files[0].name}`;
+  openM('m-cat'); inp.value='';
+}
+function confirmUpload(){
+  const cat=document.getElementById('cat-sel').value, desc=document.getElementById('cat-desc').value;
+  pendingFiles.forEach(f=>{
+    S.gedDocs.push({id:Date.now()+Math.random(),name:f.name,type:f.name.split('.').pop().toLowerCase(),cat,date:new Date().toISOString().slice(0,10),desc,size:f.size,generated:false});
+  });
+  pendingFiles=[]; renderGed(); save(); closeM('m-cat'); notify('Document(s) classé(s)');
+}
+function delGedDoc(id){ S.gedDocs=S.gedDocs.filter(d=>d.id!==id); renderGed(); save(); }
+const DOC_ICONS={docx:'📄',pdf:'📕',jpg:'🖼️',png:'🖼️',default:'📎'};
+function renderGed(){
+  const el=document.getElementById('ged-list');
+  const docs=gedFilter==='all'?S.gedDocs:S.gedDocs.filter(d=>d.cat===gedFilter);
+  if(!docs.length){ el.innerHTML='<div class="empty"><div class="empty-icon">📂</div>Aucun document'+(gedFilter!=='all'?' dans cette catégorie':'')+'</div>'; return; }
+  el.innerHTML=docs.map(d=>{
+    const icon=DOC_ICONS[d.type]||DOC_ICONS.default;
+    const sz=d.size?` · ${(d.size/1024).toFixed(0)} Ko`:'';
+    return `<div class="doc-item"><div class="doc-icon">${icon}</div><div style="flex:1;min-width:0"><div class="doc-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.name}</div><div class="doc-meta"><span class="b b-blue" style="font-size:10px">${d.cat}</span> · ${d.date}${sz}${d.desc?' · '+d.desc:''}</div></div><div style="display:flex;gap:6px;margin-left:auto;flex-shrink:0">${d.generated?`<button class="btn btn-sm btn-green" onclick="reDownload(${d.id})">⬇️ Word</button>`:''}<button class="btn btn-sm btn-ic" onclick="delGedDoc(${d.id})" style="color:var(--red)">×</button></div></div>`;
+  }).join('');
+}
+async function reDownload(id){
+  const d=S.gedDocs.find(x=>x.id===id); if(!d||!d.text)return;
+  try{ const blob=await buildDocx(d.text); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=d.name.replace(/\s+/g,'_')+'_'+d.date+'.docx'; a.click(); notify('✓ Téléchargé'); } catch(e){ notify('Erreur : '+e.message); }
+}
+function filterGed(cat,el){ gedFilter=cat; document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active')); el.classList.add('active'); renderGed(); }
+
+// ── PERSISTENCE ──
+function save(){
+  try{
+    localStorage.setItem('syndic_v5', JSON.stringify({
+      charges:S.charges, ags:S.ags, travaux:S.travaux,
+      gedDocs:S.gedDocs.map(d=>({...d,text:d.generated?d.text:undefined})),
+      sh:S.sh, np:S.np, cyril:S.cyril
+    }));
+  } catch(e){}
+}
+function load(){
+  try{
+    const raw=localStorage.getItem('syndic_v5'); if(!raw)return;
+    const d=JSON.parse(raw);
+    if(d.charges) S.charges=d.charges;
+    if(d.ags) S.ags=d.ags;
+    if(d.travaux) S.travaux=d.travaux;
+    if(d.gedDocs) S.gedDocs=d.gedDocs;
+    if(d.sh){ S.sh=d.sh; document.getElementById('sh-nm').textContent=(d.sh.p+' '+d.sh.n).trim(); document.getElementById('sh-ct').textContent=[d.sh.e,d.sh.t,d.sh.a].filter(Boolean).join(' · '); if(d.sh.r) document.getElementById('sh-role').textContent=d.sh.r; document.getElementById('av-sh').textContent=(d.sh.p.charAt(0)+(d.sh.n.charAt(0)||'')).toUpperCase(); document.getElementById('sh-p').value=d.sh.p||''; document.getElementById('sh-n').value=d.sh.n||''; document.getElementById('sh-a').value=d.sh.a||''; document.getElementById('sh-e').value=d.sh.e||''; document.getElementById('sh-t').value=d.sh.t||''; }
+    if(d.np){ S.np=d.np; document.getElementById('np-nm').textContent=(d.np.p+' '+d.np.n).trim(); document.getElementById('np-ct').textContent=[d.np.e,d.np.t,d.np.a].filter(Boolean).join(' · '); document.getElementById('av-np').textContent=(d.np.p.charAt(0)+(d.np.n.charAt(0)||'')).toUpperCase(); document.getElementById('np-p').value=d.np.p||''; document.getElementById('np-n').value=d.np.n||''; document.getElementById('np-a').value=d.np.a||''; document.getElementById('np-e').value=d.np.e||''; document.getElementById('np-t').value=d.np.t||''; }
+    if(d.cyril&&d.cyril.n){
+      S.cyril=d.cyril;
+      const fn=(d.cyril.p+' '+d.cyril.n).trim();
+      document.getElementById('cyril-nm').innerHTML=fn+'<span class="b b-green" style="margin-left:8px">Identifié</span>';
+      document.getElementById('cyril-ct').textContent=[d.cyril.e,d.cyril.t,d.cyril.a].filter(Boolean).join(' · ');
+    }
+    renderCharges(); renderAGs(); renderTravaux(); renderGed();
+  } catch(e){}
+  updateKeyStatus();
+}
+
+load();
+document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('fr-FR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+</script>
+</body>
+</html>
