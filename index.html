@@ -689,7 +689,7 @@ async function genDoc(type){
   document.getElementById('gen-loading').style.display='flex';
   document.getElementById('gen-out').textContent='';
   try{
-    const r = await fetch('https://api.anthropic.com/v1/messages',{
+    const r = await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:PROMPTS[type]()}]}),{
       method:'POST',
       headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01'},
       body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:2500,messages:[{role:'user',content:PROMPTS[type]()}]})
